@@ -1,10 +1,9 @@
 package com.yu.service;
 
-import com.yu.common.UserDetail;
+import com.yu.dto.LoginParam;
 import com.yu.entity.UmUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * <p>
@@ -16,4 +15,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 public interface UmUserService extends IService<UmUser> {
     UserDetails findByUsername(String username);
+
+    UmUser getUserByUsername(String username);
+
+    String login(String username,String password);
+
+    UmUser register(LoginParam loginParam);
 }

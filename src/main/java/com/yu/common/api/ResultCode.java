@@ -1,4 +1,4 @@
-package com.yu.common;
+package com.yu.common.api;
 
 /**
  * 枚举了一些常用API操作码
@@ -12,7 +12,7 @@ public enum ResultCode implements IErrorCode {
     private long code;
     private String message;
 
-    private ResultCode(long code, String message) {
+    ResultCode(long code, String message) {
         this.code = code;
         this.message = message;
     }

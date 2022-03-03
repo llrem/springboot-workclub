@@ -1,4 +1,4 @@
-package com.yu.common;
+package com.yu.common.api;
 
 /**
  * 封装API的错误码

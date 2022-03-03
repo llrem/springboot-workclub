@@ -1,12 +1,15 @@
 package com.yu.controller;
 
-import com.yu.common.Result;
+import com.yu.common.api.Result;
 import com.yu.dto.LoginParam;
 import com.yu.entity.UmUser;
 import com.yu.service.UmUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -17,20 +20,46 @@ import org.springframework.web.bind.annotation.*;
  * @since 2022-01-21
  */
 @RestController
-@RequestMapping
+@RequestMapping("/user")
 public class UmUserController {
     @Autowired
     UmUserService umUserService;
 
-    @GetMapping("/hello")
-    public String hello(){
-        return "hello!!!";
+    @PostMapping("/register")
+    public Result<UmUser> register(@RequestBody LoginParam loginParam){
+        UmUser umsAdmin = umUserService.register(loginParam);
+        if (umsAdmin == null) {
+            return Result.failed();
+        }
+        return Result.success(umsAdmin);
     }
 
-    @GetMapping("/")
-    public String no(){
-        String encoded = new BCryptPasswordEncoder().encode("123456");
-        return encoded;
+    @PostMapping("/login")
+    public Result login(@RequestBody LoginParam loginParam){
+        String token = umUserService.login(loginParam.getUsername(), loginParam.getPassword());
+        if (token == null) {
+            return Result.validateFailed("用户名或密码错误！");
+        }
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", token);
+        return Result.success(tokenMap);
     }
+
+    @GetMapping("/getInfo")
+    public Result<UmUser> getInfo(Principal principal){
+        if(principal==null){
+            return Result.unauthorized(null);
+        }
+        String username = principal.getName();
+        UmUser user = umUserService.getUserByUsername(username);
+        user.setPassword("");
+        return Result.success(user);
+    }
+
+    @PostMapping("/logout")
+    public Result logout(){
+        return Result.success(null);
+    }
+
 }
 

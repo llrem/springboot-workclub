@@ -1,20 +1,12 @@
-package com.yu.common;
+package com.yu.common.api;
 
 import lombok.Data;
 
 @Data
 public class Result<T>{
-    /**
-     * 状态码
-     */
+
     private long code;
-    /**
-     * 提示信息
-     */
     private String message;
-    /**
-     * 数据封装
-     */
     private T data;
 
     public Result(long code, String message, T data) {
