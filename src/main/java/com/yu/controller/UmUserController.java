@@ -1,5 +1,7 @@
 package com.yu.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
 import com.yu.dto.LoginParam;
 import com.yu.entity.UmUser;
@@ -23,11 +25,11 @@ import java.util.Map;
 @RequestMapping("/user")
 public class UmUserController {
     @Autowired
-    UmUserService umUserService;
+    UmUserService userService;
 
     @PostMapping("/register")
     public Result<UmUser> register(@RequestBody LoginParam loginParam){
-        UmUser umsAdmin = umUserService.register(loginParam);
+        UmUser umsAdmin = userService.register(loginParam);
         if (umsAdmin == null) {
             return Result.failed();
         }
@@ -36,7 +38,7 @@ public class UmUserController {
 
     @PostMapping("/login")
     public Result login(@RequestBody LoginParam loginParam){
-        String token = umUserService.login(loginParam.getUsername(), loginParam.getPassword());
+        String token = userService.login(loginParam.getUsername(), loginParam.getPassword());
         if (token == null) {
             return Result.validateFailed("用户名或密码错误！");
         }
@@ -51,7 +53,7 @@ public class UmUserController {
             return Result.unauthorized(null);
         }
         String username = principal.getName();
-        UmUser user = umUserService.getUserByUsername(username);
+        UmUser user = userService.getUserByUsername(username);
         user.setPassword("");
         return Result.success(user);
     }
@@ -61,5 +63,35 @@ public class UmUserController {
         return Result.success(null);
     }
 
+    @PostMapping("/saveInfo")
+    public Result saveInfo(@RequestBody UmUser user){
+        UpdateWrapper<UmUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",user.getId())
+                .set("nick_name",user.getNickName())
+                .set("gender",user.getGender())
+                .set("age",user.getAge())
+                .set("email",user.getEmail())
+                .set("phone",user.getPhone())
+                .set("job",user.getJob())
+                .set("city",user.getCity())
+                .set("personalized_signature",user.getPersonalizedSignature());
+        boolean isUpdate = userService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success(user);
+        }
+        return Result.failed();
+    }
+
+    @PostMapping("/saveAvatar")
+    public Result saveAvatar(@RequestBody UmUser user){
+        UpdateWrapper<UmUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",user.getId())
+                .set("icon",user.getIcon());
+        boolean isUpdate = userService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success(user);
+        }
+        return Result.failed();
+    }
 }
 

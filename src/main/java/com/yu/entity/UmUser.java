@@ -32,7 +32,9 @@ public class UmUser implements Serializable {
 
     private String nickName;
 
-    private Integer gender;
+    private String gender;
+
+    private Integer age;
 
     private String email;
 

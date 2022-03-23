@@ -1,14 +1,15 @@
 package com.yu.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yu.common.api.Result;
+import com.yu.dto.MemberParam;
 import com.yu.entity.PmProject;
+import com.yu.entity.PmProjectUser;
 import com.yu.service.PmProjectService;
+import com.yu.service.PmProjectUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -23,18 +24,17 @@ import java.util.List;
 @RequestMapping("/project")
 public class PmProjectController {
 
-    @Value("${file.upload.url}")
-    private String uploadFilePath;
+//    @Value("${file.upload.url}")
+//    private String uploadFilePath;
     @Autowired
     private PmProjectService projectService;
+    @Autowired
+    private PmProjectUserService projectUserService;
 
     @GetMapping("/get_projects")
     public Result<List<PmProject>> getProjects(@RequestParam(value = "id") Long id){
         List<PmProject> projectList = projectService.getByCreateUserId(id);
-        if(projectList.size()>0){
-            return Result.success(projectList);
-        }
-        return Result.failed();
+        return Result.success(projectList);
     }
 
     @GetMapping("/search_project")
@@ -45,16 +45,28 @@ public class PmProjectController {
 
     @PostMapping("/create_project")
     public Result<PmProject> createProject(@RequestBody PmProject project){
-        project.setCreateDate(new Date());
+        project.setCreateDate(LocalDateTime.now());
         project.setStatus(1);
         if(project.getPicture().equals("")){
             project.setPicture("http://workclub-oss.oss-cn-chengdu.aliyuncs.com/workclub/project_cover/default.png");
         }
         boolean isSave = projectService.save(project);
-        if (isSave){
+
+        PmProjectUser projectUser = new PmProjectUser();
+        projectUser.setUserId(project.getCreateUserId());
+        projectUser.setProjectId(project.getId());
+        boolean isSave2 = projectUserService.save(projectUser);
+
+        if (isSave && isSave2){
             return Result.success(project);
         }
         return Result.failed();
+    }
+
+    @GetMapping("/get_project_members")
+    public Result<List<MemberParam>> getProjectMembers(@RequestParam(value = "projectId") Long id){
+        List<MemberParam> memberList = projectUserService.getMemberListByProjectId(id);
+        return Result.success(memberList);
     }
 
 }

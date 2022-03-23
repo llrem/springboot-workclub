@@ -3,41 +3,29 @@ package com.yu.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
  * @author llrem
- * @since 2022-02-20
+ * @since 2022-03-22
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class PmProject implements Serializable {
+public class PmProjectUser implements Serializable {
 
     private static final long serialVersionUID=1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    private String name;
+    private Long projectId;
 
-    private LocalDateTime createDate;
-
-    private String picture;
-
-    private String description;
-
-    private Long createUserId;
-
-    private Integer status;
+    private Long userId;
 
 
 }
