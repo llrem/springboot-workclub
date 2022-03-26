@@ -1,6 +1,7 @@
 package com.yu.service.impl;
 
 import com.yu.dto.MemberParam;
+import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
 import com.yu.mapper.PmProjectUserMapper;
 import com.yu.service.PmProjectUserService;
@@ -23,8 +24,14 @@ public class PmProjectUserServiceImpl extends ServiceImpl<PmProjectUserMapper, P
 
     @Autowired
     private PmProjectUserMapper projectUserMapper;
+
     @Override
     public List<MemberParam> getMemberListByProjectId(Long projectId) {
         return  projectUserMapper.getMemberListByProjectId(projectId);
+    }
+
+    @Override
+    public List<PmProject> getProjectsByUserId(Long userId) {
+        return projectUserMapper.getProjectsByUserId(userId);
     }
 }

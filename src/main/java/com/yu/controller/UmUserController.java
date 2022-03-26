@@ -82,7 +82,7 @@ public class UmUserController {
         return Result.failed();
     }
 
-    @PostMapping("/saveAvatar")
+    @PostMapping("/save_avatar")
     public Result saveAvatar(@RequestBody UmUser user){
         UpdateWrapper<UmUser> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",user.getId())

@@ -4,10 +4,7 @@ package com.yu.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
-import com.yu.dto.AddListParam;
-import com.yu.dto.AddTaskParam;
-import com.yu.dto.ChangeDateParam;
-import com.yu.dto.TaskInfoParam;
+import com.yu.dto.*;
 import com.yu.entity.*;
 import com.yu.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,10 @@ public class TmTaskController {
     TmTagService tagService;
     @Autowired
     UmUserService userService;
+    @Autowired
+    TmTaskFollowerService taskFollowerService;
+    @Autowired
+    TmTaskCommentService taskCommentService;
 
     @PostMapping("/add_task")
     public Result<TmTask> addTask(@RequestBody AddTaskParam taskParam){
@@ -113,6 +114,8 @@ public class TmTaskController {
         queryWrapper.eq("task_id",taskId);
         List<TmTag> list = tagService.list(queryWrapper);
 
+        List<MemberParam> followers = taskFollowerService.getFollowersByTaskId(taskId);
+
         UmUser user = userService.getById(task.getExecutor());
 
         TaskInfoParam taskInfo = new TaskInfoParam(
@@ -123,6 +126,7 @@ public class TmTaskController {
                 task.getPriority(),
                 task.getType(),
                 list,
+                followers,
                 task.getStatus()
         );
 
@@ -199,8 +203,8 @@ public class TmTaskController {
         return Result.failed();
     }
 
-    @GetMapping("/select_member")
-    public Result<UmUser> selectMember(@RequestParam(value = "taskId") Long taskId,
+    @GetMapping("/select_executor")
+    public Result<UmUser> selectExecutor(@RequestParam(value = "taskId") Long taskId,
                                             @RequestParam(value = "memberId") Long memberId){
         UpdateWrapper<TmTask> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",taskId).set("executor",memberId);
@@ -212,6 +216,18 @@ public class TmTaskController {
         return Result.failed();
     }
 
+    @GetMapping("/select_follower")
+    public Result<UmUser> selectFollower(@RequestParam(value = "taskId") Long taskId,
+                                         @RequestParam(value = "memberId") Long memberId){
+        TmTaskFollower taskFollower = new TmTaskFollower();
+        taskFollower.setTaskId(taskId);
+        taskFollower.setUserId(memberId);
+        boolean isSave = taskFollowerService.save(taskFollower);
+        if (isSave){
+            return Result.success(userService.getById(memberId));
+        }
+        return Result.failed();
+    }
 
     @GetMapping("/remove_executor")
     public Result<String> removeExecutor(@RequestParam(value = "taskId") Long taskId){
@@ -234,6 +250,22 @@ public class TmTaskController {
             return Result.success(description);
         }
         return Result.failed();
+    }
+
+    @GetMapping("/get_comments")
+    public Result<List<CommentParam>> getComments(@RequestParam(value = "taskId") Long taskId){
+        List<CommentParam> list = taskCommentService.getCommentsByTaskId(taskId);
+        return Result.success(list);
+    }
+
+    @PostMapping("/submit_comments")
+    public Result<TmTaskComment> submitComments(@RequestBody TmTaskComment comment){
+        comment.setCreateDate(LocalDateTime.now());
+       boolean isSave = taskCommentService.save(comment);
+       if(isSave){
+           return Result.success(comment);
+       }
+       return Result.failed();
     }
 }
 

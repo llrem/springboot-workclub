@@ -27,13 +27,13 @@ public class PmProjectController {
 //    @Value("${file.upload.url}")
 //    private String uploadFilePath;
     @Autowired
-    private PmProjectService projectService;
+    PmProjectService projectService;
     @Autowired
-    private PmProjectUserService projectUserService;
+    PmProjectUserService projectUserService;
 
     @GetMapping("/get_projects")
     public Result<List<PmProject>> getProjects(@RequestParam(value = "id") Long id){
-        List<PmProject> projectList = projectService.getByCreateUserId(id);
+        List<PmProject> projectList = projectUserService.getProjectsByUserId(id);
         return Result.success(projectList);
     }
 

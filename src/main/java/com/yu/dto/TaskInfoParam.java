@@ -25,5 +25,7 @@ public class TaskInfoParam {
 
     private List<TmTag> tags;
 
+    private List<MemberParam> followers;
+
     private Integer status;
 }

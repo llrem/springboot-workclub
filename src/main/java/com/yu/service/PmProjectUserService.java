@@ -1,6 +1,7 @@
 package com.yu.service;
 
 import com.yu.dto.MemberParam;
+import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -16,4 +17,5 @@ import java.util.List;
  */
 public interface PmProjectUserService extends IService<PmProjectUser> {
     List<MemberParam> getMemberListByProjectId(Long projectId);
+    List<PmProject> getProjectsByUserId(Long userId);
 }

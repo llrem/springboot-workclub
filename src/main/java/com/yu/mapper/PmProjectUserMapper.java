@@ -1,6 +1,7 @@
 package com.yu.mapper;
 
 import com.yu.dto.MemberParam;
+import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
@@ -23,4 +24,10 @@ public interface PmProjectUserMapper extends BaseMapper<PmProjectUser> {
             "WHERE pm_project_user.user_id = um_user.id " +
             "AND pm_project_user.project_id = #{projectId}")
     List<MemberParam> getMemberListByProjectId(Long projectId);
+
+    @Select("SELECT project_id as id, name, create_date, picture, description, create_user_id, status " +
+            "FROM pm_project_user, pm_project " +
+            "WHERE pm_project_user.project_id = pm_project.id " +
+            "AND pm_project_user.user_id = #{userId}")
+    List<PmProject> getProjectsByUserId(Long userId);
 }
