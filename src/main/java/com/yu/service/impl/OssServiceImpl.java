@@ -1,10 +1,13 @@
 package com.yu.service.impl;
 
 import cn.hutool.json.JSONUtil;
-import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.*;
 import com.aliyun.oss.common.utils.BinaryUtil;
+import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.MatchMode;
+import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.PolicyConditions;
+import com.yu.common.api.Result;
 import com.yu.dto.OssCallbackParam;
 import com.yu.dto.OssCallbackResult;
 import com.yu.dto.OssPolicyResult;
@@ -16,6 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -50,8 +57,8 @@ public class OssServiceImpl implements OssService {
 	public OssPolicyResult policy() {
 		OssPolicyResult result = new OssPolicyResult();
 		// 存储目录
-//		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-//		String dir = ALIYUN_OSS_DIR_PREFIX+sdf.format(new Date());
+		//SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		//String dir = ALIYUN_OSS_DIR_PREFIX+sdf.format(new Date());
 		String dir = ALIYUN_OSS_DIR_PREFIX;
 		// 签名有效期
 		long expireEndTime = System.currentTimeMillis() + ALIYUN_OSS_EXPIRE * 1000;
@@ -100,4 +107,30 @@ public class OssServiceImpl implements OssService {
 		return result;
 	}
 
+	@Override
+	public boolean download(String objectName,OutputStream os) {
+		try {
+			OSSObject object = ossClient.getObject(ALIYUN_OSS_BUCKET_NAME,objectName);
+			BufferedInputStream in = new BufferedInputStream(object.getObjectContent());
+			BufferedOutputStream out = new BufferedOutputStream(os);
+			byte[] buffer = new byte[1024];
+			int lenght;
+			while ((lenght = in.read(buffer)) != -1) {
+				out.write(buffer, 0, lenght);
+			}
+			out.flush();
+			out.close();
+			in.close();
+			return true;
+
+		} catch (Exception e) {
+			System.out.println(e);
+			return false;
+		}
+	}
+
+	@Override
+	public void delete(String objectName) {
+		ossClient.deleteObject(ALIYUN_OSS_BUCKET_NAME, objectName);
+	}
 }

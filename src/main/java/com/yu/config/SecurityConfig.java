@@ -31,7 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .antMatchers("/user/register","/user/login","/user/logout").permitAll()
+                .antMatchers("/user/register","/user/login","/user/logout",
+                        "/aliyun/oss/download").permitAll()
                 .anyRequest().authenticated();
 
         // 添加JWT filter

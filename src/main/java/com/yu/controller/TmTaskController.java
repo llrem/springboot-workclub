@@ -42,6 +42,8 @@ public class TmTaskController {
     TmTaskFollowerService taskFollowerService;
     @Autowired
     TmTaskCommentService taskCommentService;
+    @Autowired
+    TmTaskFileService taskFileService;
 
     @PostMapping("/add_task")
     public Result<TmTask> addTask(@RequestBody AddTaskParam taskParam){
@@ -266,6 +268,35 @@ public class TmTaskController {
            return Result.success(comment);
        }
        return Result.failed();
+    }
+
+    @GetMapping("/get_files")
+    public Result<List<TmTaskFile>> getFiles(@RequestParam(value = "taskId") Long taskId){
+        QueryWrapper<TmTaskFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("task_id",taskId);
+        List<TmTaskFile> list = taskFileService.list(queryWrapper);
+        return Result.success(list);
+    }
+
+    @PostMapping("/add_file")
+    public Result<String> addFile(@RequestBody TmTaskFile taskFile){
+        QueryWrapper<TmTaskFile> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("path",taskFile.getPath()).eq("name",taskFile.getName());
+        List<TmTaskFile> list = taskFileService.list(queryWrapper);
+        if(list.size()>0){
+            return Result.success("success");
+        }
+       boolean isSave = taskFileService.save(taskFile);
+       if(isSave){
+           return Result.success("success");
+       }
+       return Result.failed();
+    }
+
+    @PostMapping("/delete_file")
+    public Result<String> deleteFile(@RequestParam(value = "fileId") Long id){
+
+        return Result.failed();
     }
 }
 

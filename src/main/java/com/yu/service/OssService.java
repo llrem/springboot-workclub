@@ -1,9 +1,11 @@
 package com.yu.service;
 
+import com.yu.common.api.Result;
 import com.yu.dto.OssCallbackResult;
 import com.yu.dto.OssPolicyResult;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.OutputStream;
 
 /**
  * Oss对象存储管理Service
@@ -18,4 +20,8 @@ public interface OssService {
      * Oss上传成功回调
      */
     OssCallbackResult callback(HttpServletRequest request);
+
+    boolean download(String objectName,OutputStream os);
+
+    void delete(String objectName);
 }
