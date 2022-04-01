@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,6 +43,8 @@ public class TmTaskController {
     TmTaskCommentService taskCommentService;
     @Autowired
     TmTaskFileService taskFileService;
+    @Autowired
+    TmTaskLogService taskLogService;
 
     @PostMapping("/add_task")
     public Result<TmTask> addTask(@RequestBody AddTaskParam taskParam){
@@ -297,6 +298,84 @@ public class TmTaskController {
     public Result<String> deleteFile(@RequestParam(value = "fileId") Long id){
 
         return Result.failed();
+    }
+
+    @PostMapping("/add_log")
+    public Result<TmTaskLog> addLog(@RequestBody TmTaskLog taskLog){
+        taskLog.setCreateDate(LocalDateTime.now());
+        boolean isSave = taskLogService.save(taskLog);
+        if(isSave){
+            return Result.success(taskLog);
+        }
+        return Result.failed();
+    }
+
+    @GetMapping("/get_logList")
+    public Result<List<TaskLogListItem>> getLogList(@RequestParam(value = "taskId") String taskId){
+        List<TaskLogParam> logParamList = taskLogService.getLogsByTaskId(taskId);
+        List<TaskLogListItem> list = new ArrayList<>();
+        for(TaskLogParam logParam : logParamList){
+            TaskLogListItem logListItem = new TaskLogListItem();
+            switch (logParam.getType()){
+                case 1:{
+                    logListItem.setContent(logParam.getName()+" 将任务描述修改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 2:{
+                    logListItem.setContent(logParam.getName()+" 将任务状态修改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 3:{
+                    UmUser user = userService.getById(logParam.getObject());
+                    logListItem.setContent(logParam.getName()+" 将任务负责人更改为 "+user.getNickName());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 4:{
+                    logListItem.setContent(logParam.getName()+" 将任务开始时间更改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 5:{
+                    logListItem.setContent(logParam.getName()+" 将任务结束时间更改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 6:{
+                    logListItem.setContent(logParam.getName()+" 将任务优先级更改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 7:{
+                    logListItem.setContent(logParam.getName()+" 添加标签 ["+logParam.getObject()+"]");
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 8:{
+                    logListItem.setContent(logParam.getName()+" 删除标签 ["+logParam.getObject()+"]");
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+                case 9:{
+                    UmUser user = userService.getById(logParam.getObject());
+                    logListItem.setContent(logParam.getName()+" 添加参与人 "+user.getNickName());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
+            }
+        }
+        return Result.success(list);
     }
 }
 

@@ -114,9 +114,9 @@ public class OssServiceImpl implements OssService {
 			BufferedInputStream in = new BufferedInputStream(object.getObjectContent());
 			BufferedOutputStream out = new BufferedOutputStream(os);
 			byte[] buffer = new byte[1024];
-			int lenght;
-			while ((lenght = in.read(buffer)) != -1) {
-				out.write(buffer, 0, lenght);
+			int length;
+			while ((length = in.read(buffer)) != -1) {
+				out.write(buffer, 0, length);
 			}
 			out.flush();
 			out.close();

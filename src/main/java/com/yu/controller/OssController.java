@@ -61,10 +61,11 @@ public class OssController {
         TmTaskFile taskFile = taskFileService.getById(id);
         if(taskFile != null){
             String objectName = taskFile.getPath()+'/'+taskFile.getName();
+            //response.setHeader必须放在ossService.download前面，否者会出错！
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + URLEncoder.encode(taskFile.getName(), "UTF-8"));
             boolean isDownload = ossService.download(objectName,response.getOutputStream());
             if (isDownload){
-                response.setHeader("Content-Disposition",
-                        "attachment;filename=" + URLEncoder.encode(taskFile.getName(), "UTF-8"));
                 return Result.success("success");
             }
         }
