@@ -3,14 +3,9 @@ package com.yu.service.impl;
 import cn.hutool.json.JSONUtil;
 import com.aliyun.oss.*;
 import com.aliyun.oss.common.utils.BinaryUtil;
-import com.aliyun.oss.model.GetObjectRequest;
-import com.aliyun.oss.model.MatchMode;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.PolicyConditions;
+import com.aliyun.oss.model.*;
 import com.yu.common.api.Result;
-import com.yu.dto.OssCallbackParam;
-import com.yu.dto.OssCallbackResult;
-import com.yu.dto.OssPolicyResult;
+import com.yu.dto.*;
 import com.yu.service.OssService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +14,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Oss对象存储管理Service实现类
@@ -132,5 +127,46 @@ public class OssServiceImpl implements OssService {
 	@Override
 	public void delete(String objectName) {
 		ossClient.deleteObject(ALIYUN_OSS_BUCKET_NAME, objectName);
+	}
+
+	@Override
+	public FileListParam listObjects(String projectId) {
+		String keyPrefix = "workclub/file/project/"+projectId+"/";
+
+		ListObjectsRequest listObjectsRequest = new ListObjectsRequest(ALIYUN_OSS_BUCKET_NAME);
+		listObjectsRequest.setPrefix(keyPrefix);
+		listObjectsRequest.setDelimiter("/");
+		// 列举文件。
+		ObjectListing listing = ossClient.listObjects(listObjectsRequest);
+
+		List<FileParam> folderList = new ArrayList<>();
+		// 遍历所有文件夹
+		for (String commonPrefix : listing.getCommonPrefixes()) {
+			FileParam fileParam = new FileParam();
+			String[] path = Pattern.compile("/").split(commonPrefix);
+			fileParam.setName(path[path.length-1]);
+			fileParam.setPath(commonPrefix);
+			folderList.add(fileParam);
+		}
+		List<FileParam> fileList = new ArrayList<>();
+		// 遍历所有文件
+		for (OSSObjectSummary objectSummary : listing.getObjectSummaries()) {
+			if(!objectSummary.getKey().endsWith("/")){
+				FileParam fileParam = new FileParam();
+				String[] path = Pattern.compile("/").split(objectSummary.getKey());
+				fileParam.setName(path[path.length-1]);
+				fileParam.setPath(objectSummary.getKey());
+				fileList.add(fileParam);
+			}
+		}
+		return new FileListParam(folderList,fileList);
+	}
+
+	@Override
+	public boolean addFolder(String objectName) {
+		byte[] buffer = new byte[0];
+		ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+		ossClient.putObject(ALIYUN_OSS_BUCKET_NAME,objectName,in);
+		return true;
 	}
 }

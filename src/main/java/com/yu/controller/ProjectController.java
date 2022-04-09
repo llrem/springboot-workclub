@@ -1,10 +1,12 @@
 package com.yu.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
 import com.yu.dto.MemberParam;
 import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
+import com.yu.entity.TmTask;
 import com.yu.service.PmProjectService;
 import com.yu.service.PmProjectUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/project")
-public class PmProjectController {
+public class ProjectController {
 
 //    @Value("${file.upload.url}")
 //    private String uploadFilePath;
@@ -67,6 +69,17 @@ public class PmProjectController {
     public Result<List<MemberParam>> getProjectMembers(@RequestParam(value = "projectId") Long id){
         List<MemberParam> memberList = projectUserService.getMemberListByProjectId(id);
         return Result.success(memberList);
+    }
+
+    @PostMapping("/update_cover")
+    public Result<String> updateCover(@RequestBody PmProject project){
+        UpdateWrapper<PmProject> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",project.getId()).set("picture",project.getPicture());
+        boolean isUpdate = projectService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success("success");
+        }
+        return Result.failed();
     }
 
 }

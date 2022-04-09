@@ -1,6 +1,7 @@
 package com.yu.mapper;
 
 import com.yu.dto.MemberParam;
+import com.yu.dto.PermissionParam;
 import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -30,4 +31,11 @@ public interface PmProjectUserMapper extends BaseMapper<PmProjectUser> {
             "WHERE pm_project_user.project_id = pm_project.id " +
             "AND pm_project_user.user_id = #{userId}")
     List<PmProject> getProjectsByUserId(Long userId);
+
+
+    @Select("SELECT name " +
+            "FROM um_user_role, um_role " +
+            "WHERE um_user_role.role_id = um_role.id " +
+            "AND um_user_role.user_id = #{userId}")
+    List<String> getPermissionByUserId(Long userId);
 }

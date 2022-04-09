@@ -1,6 +1,7 @@
 package com.yu.service.impl;
 
 import com.yu.dto.MemberParam;
+import com.yu.dto.PermissionParam;
 import com.yu.entity.PmProject;
 import com.yu.entity.PmProjectUser;
 import com.yu.mapper.PmProjectUserMapper;
@@ -33,5 +34,10 @@ public class PmProjectUserServiceImpl extends ServiceImpl<PmProjectUserMapper, P
     @Override
     public List<PmProject> getProjectsByUserId(Long userId) {
         return projectUserMapper.getProjectsByUserId(userId);
+    }
+
+    @Override
+    public List<String> getPermissionByUserId(Long userId) {
+        return projectUserMapper.getPermissionByUserId(userId);
     }
 }

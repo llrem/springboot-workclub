@@ -23,8 +23,8 @@ import java.util.List;
  * @since 2022-03-11
  */
 @RestController
-@RequestMapping("task")
-public class TmTaskController {
+@RequestMapping("task/board")
+public class TaskController {
     @Autowired
     TmTaskService taskService;
     @Autowired

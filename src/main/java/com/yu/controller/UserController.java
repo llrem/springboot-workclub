@@ -1,6 +1,5 @@
 package com.yu.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
 import com.yu.dto.LoginParam;
@@ -23,7 +22,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/user")
-public class UmUserController {
+public class UserController {
     @Autowired
     UmUserService userService;
 

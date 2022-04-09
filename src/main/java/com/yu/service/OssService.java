@@ -1,11 +1,15 @@
 package com.yu.service;
 
+import com.aliyun.oss.model.OSSObjectSummary;
 import com.yu.common.api.Result;
+import com.yu.dto.FileListParam;
+import com.yu.dto.FileParam;
 import com.yu.dto.OssCallbackResult;
 import com.yu.dto.OssPolicyResult;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Oss对象存储管理Service
@@ -24,4 +28,8 @@ public interface OssService {
     boolean download(String objectName,OutputStream os);
 
     void delete(String objectName);
+
+    FileListParam listObjects(String projectId);
+
+    boolean addFolder(String objectName);
 }
