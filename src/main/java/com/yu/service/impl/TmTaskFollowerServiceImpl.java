@@ -1,6 +1,7 @@
 package com.yu.service.impl;
 
 import com.yu.dto.MemberParam;
+import com.yu.entity.TmTask;
 import com.yu.entity.TmTaskFollower;
 import com.yu.entity.UmUser;
 import com.yu.mapper.TmTaskFollowerMapper;
@@ -28,5 +29,10 @@ public class TmTaskFollowerServiceImpl extends ServiceImpl<TmTaskFollowerMapper,
     @Override
     public List<MemberParam> getFollowersByTaskId(String taskId) {
         return taskFollowerMapper.getFollowersByTaskId(taskId);
+    }
+
+    @Override
+    public List<TmTask> getTaskByUserId(String userId) {
+        return taskFollowerMapper.getTaskByUserId(userId);
     }
 }

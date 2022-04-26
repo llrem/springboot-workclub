@@ -27,17 +27,18 @@ public class PmProjectUserServiceImpl extends ServiceImpl<PmProjectUserMapper, P
     private PmProjectUserMapper projectUserMapper;
 
     @Override
-    public List<MemberParam> getMemberListByProjectId(Long projectId) {
+    public List<MemberParam> getMemberListByProjectId(String projectId) {
         return  projectUserMapper.getMemberListByProjectId(projectId);
     }
 
     @Override
-    public List<PmProject> getProjectsByUserId(Long userId) {
+    public List<PmProject> getProjectsByUserId(String userId) {
         return projectUserMapper.getProjectsByUserId(userId);
     }
 
     @Override
-    public List<String> getPermissionByUserId(Long userId) {
-        return projectUserMapper.getPermissionByUserId(userId);
+    public List<MemberParam> searchMember(String keyword, String projectId) {
+        return projectUserMapper.searchMember(keyword,projectId);
     }
+
 }

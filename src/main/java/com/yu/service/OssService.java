@@ -29,6 +29,8 @@ public interface OssService {
 
     void delete(String objectName);
 
+    void deleteFolder(String objectName);
+
     FileListParam listObjects(String projectId);
 
     boolean addFolder(String objectName);

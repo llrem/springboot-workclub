@@ -58,8 +58,8 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public Result logout(){
-        return Result.success(null);
+    public Result<String> logout(){
+        return Result.success("success");
     }
 
     @PostMapping("/saveInfo")

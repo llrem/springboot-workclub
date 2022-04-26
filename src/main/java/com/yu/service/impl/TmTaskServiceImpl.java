@@ -24,7 +24,7 @@ public class TmTaskServiceImpl extends ServiceImpl<TmTaskMapper, TmTask> impleme
     TmTaskMapper taskMapper;
 
     @Override
-    public List<TmTask> getTasksByBoardId(String id) {
-        return taskMapper.getTasksByBoardId(id);
+    public List<TmTask> getTasksByBoardId(String id,String keyword) {
+        return taskMapper.getTasksByBoardId(id,keyword);
     }
 }

@@ -18,10 +18,10 @@ import java.util.List;
  */
 public interface PmProjectUserService extends IService<PmProjectUser> {
 
-    List<MemberParam> getMemberListByProjectId(Long projectId);
+    List<MemberParam> getMemberListByProjectId(String projectId);
 
-    List<PmProject> getProjectsByUserId(Long userId);
+    List<PmProject> getProjectsByUserId(String userId);
 
-    List<String> getPermissionByUserId(Long userId);
+    List<MemberParam> searchMember(String keyword, String projectId);
 
 }

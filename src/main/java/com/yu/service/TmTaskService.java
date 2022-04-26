@@ -14,5 +14,5 @@ import java.util.List;
  * @since 2022-03-11
  */
 public interface TmTaskService extends IService<TmTask> {
-    public List<TmTask> getTasksByBoardId(String id);
+    public List<TmTask> getTasksByBoardId(String id,String keyword);
 }

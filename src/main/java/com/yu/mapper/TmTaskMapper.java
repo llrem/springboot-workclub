@@ -21,6 +21,7 @@ public interface TmTaskMapper extends BaseMapper<TmTask> {
     @Select("SELECT task_id as id, description,start_date,due_date,priority,type,status " +
             "FROM tm_board_task, tm_task " +
             "WHERE tm_board_task.task_id = tm_task.id " +
-            "AND tm_board_task.board_id = #{boardId}")
-    List<TmTask> getTasksByBoardId(@Param("boardId") String boardId);
+            "AND tm_board_task.board_id = #{boardId} " +
+            "AND description like '%${keyword}%'")
+    List<TmTask> getTasksByBoardId(@Param("boardId") String boardId,String keyword);
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -127,6 +128,39 @@ public class OssServiceImpl implements OssService {
 	@Override
 	public void delete(String objectName) {
 		ossClient.deleteObject(ALIYUN_OSS_BUCKET_NAME, objectName);
+	}
+
+	@Override
+	public void deleteFolder(String objectName){
+		// 删除目录及目录下的所有文件。
+		String nextMarker = null;
+		ObjectListing objectListing = null;
+		do {
+			ListObjectsRequest listObjectsRequest = new ListObjectsRequest(ALIYUN_OSS_BUCKET_NAME)
+					.withPrefix(objectName)
+					.withMarker(nextMarker);
+
+			objectListing = ossClient.listObjects(listObjectsRequest);
+			if (objectListing.getObjectSummaries().size() > 0) {
+				List<String> keys = new ArrayList<>();
+				for (OSSObjectSummary s : objectListing.getObjectSummaries()) {
+					System.out.println("key name: " + s.getKey());
+					keys.add(s.getKey());
+				}
+				DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(ALIYUN_OSS_BUCKET_NAME).withKeys(keys).withEncodingType("url");
+				DeleteObjectsResult deleteObjectsResult = ossClient.deleteObjects(deleteObjectsRequest);
+				List<String> deletedObjects = deleteObjectsResult.getDeletedObjects();
+				try {
+					for(String obj : deletedObjects) {
+						String deleteObj =  URLDecoder.decode(obj, "UTF-8");
+						System.out.println(deleteObj);
+					}
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+			}
+			nextMarker = objectListing.getNextMarker();
+		} while (objectListing.isTruncated());
 	}
 
 	@Override

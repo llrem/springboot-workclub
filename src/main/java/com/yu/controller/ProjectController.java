@@ -34,9 +34,15 @@ public class ProjectController {
     PmProjectUserService projectUserService;
 
     @GetMapping("/get_projects")
-    public Result<List<PmProject>> getProjects(@RequestParam(value = "id") Long id){
-        List<PmProject> projectList = projectUserService.getProjectsByUserId(id);
+    public Result<List<PmProject>> getProjects(@RequestParam(value = "id") String UserId){
+        List<PmProject> projectList = projectUserService.getProjectsByUserId(UserId);
         return Result.success(projectList);
+    }
+
+    @GetMapping("/get_project")
+    public Result<PmProject> getProject(@RequestParam(value = "id") Long projectId){
+        PmProject project = projectService.getById(projectId);
+        return Result.success(project);
     }
 
     @GetMapping("/search_project")
@@ -66,7 +72,7 @@ public class ProjectController {
     }
 
     @GetMapping("/get_project_members")
-    public Result<List<MemberParam>> getProjectMembers(@RequestParam(value = "projectId") Long id){
+    public Result<List<MemberParam>> getProjectMembers(@RequestParam(value = "projectId") String id){
         List<MemberParam> memberList = projectUserService.getMemberListByProjectId(id);
         return Result.success(memberList);
     }
@@ -82,6 +88,66 @@ public class ProjectController {
         return Result.failed();
     }
 
+    @PostMapping("/update_name")
+    public Result<String> updateName(@RequestBody PmProject project){
+        UpdateWrapper<PmProject> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",project.getId()).set("name",project.getName());
+        boolean isUpdate = projectService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @PostMapping("/update_description")
+    public Result<String> updateDescription(@RequestBody PmProject project){
+        UpdateWrapper<PmProject> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",project.getId()).set("description",project.getDescription());
+        boolean isUpdate = projectService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @GetMapping("/archive_project")
+    public Result<String> archiveProject(@RequestParam(value = "projectId") Long id){
+        UpdateWrapper<PmProject> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id).set("status",0);
+        boolean isUpdate = projectService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @GetMapping("/delete_project")
+    public Result<String> deleteProject(@RequestParam(value = "projectId") Long id){
+        boolean isDelete = projectService.removeById(id);
+        if(isDelete){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @GetMapping("/search")
+    public Result<PmProject> search(@RequestParam(value = "projectId") String id){
+        PmProject project = projectService.getById(id);
+        return Result.success(project);
+    }
+
+    @PostMapping("/join_project")
+    public Result<String> joinProject(@RequestBody PmProjectUser projectUser){
+        QueryWrapper<PmProjectUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("project_id",projectUser.getProjectId())
+                .eq("user_id",projectUser.getUserId());
+        PmProjectUser pu = projectUserService.getOne(queryWrapper);
+        if(pu==null){
+            projectUserService.save(projectUser);
+            return Result.success("加入成功");
+        }
+        return Result.success("你已经加入了该项目");
+    }
 }
 
 //    将文件上传至本地文件夹

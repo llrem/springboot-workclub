@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +46,8 @@ public class TaskController {
     TmTaskFileService taskFileService;
     @Autowired
     TmTaskLogService taskLogService;
+    @Autowired
+    UmUserEventService userEventService;
 
     @PostMapping("/add_task")
     public Result<TmTask> addTask(@RequestBody AddTaskParam taskParam){
@@ -67,8 +70,9 @@ public class TaskController {
     }
 
     @GetMapping("/get_tasks")
-    public Result<List<TmTask>> getTasks(@RequestParam("boardId") String id){
-        List<TmTask> list = taskService.getTasksByBoardId(id);
+    public Result<List<TmTask>> getTasks(@RequestParam("boardId") String id,
+                                         @RequestParam("keyword") String keyword){
+        List<TmTask> list = taskService.getTasksByBoardId(id,keyword);
         return Result.success(list);
     }
 
@@ -160,10 +164,22 @@ public class TaskController {
         return Result.failed();
     }
 
-    @PostMapping("/change_start_date")
-    public Result<String> changeStartDate(@RequestBody ChangeDateParam date){
+    @GetMapping("/change_task_type")
+    public Result<String> changeTaskType(@RequestParam(value = "taskId") Long id,
+                                             @RequestParam(value = "type") String type){
         UpdateWrapper<TmTask> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id",date.getId()).set("start_date",date.getDate());
+        updateWrapper.eq("id",id).set("type",type);
+        boolean isUpdate = taskService.update(updateWrapper);
+        if(isUpdate){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @PostMapping("/change_start_date")
+    public Result<String> changeStartDate(@RequestBody ChangeDateParam param){
+        UpdateWrapper<TmTask> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",param.getId()).set("start_date",param.getDate());
         boolean isUpdate = taskService.update(updateWrapper);
         if(isUpdate){
             return Result.success("success");
@@ -172,9 +188,39 @@ public class TaskController {
     }
 
     @PostMapping("/change_due_date")
-    public Result<String> changeDueDate(@RequestBody ChangeDateParam date){
+    public Result<String> changeDueDate(@RequestBody ChangeDateParam param){
+        if(param.getDate()!=null){
+            QueryWrapper<UmUserEvent> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id",param.getUserId())
+                    .eq("task_id",param.getId());
+            UmUserEvent ue = userEventService.getOne(queryWrapper);
+            TmTask task = taskService.getById(param.getId());
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            if(ue==null){
+                UmUserEvent userEvent = new UmUserEvent();
+                userEvent.setUserId(param.getUserId());
+                userEvent.setTaskId(param.getId());
+                userEvent.setTitle("任务到期提醒");
+                userEvent.setContent("任务 ["+task.getDescription()+"] 即将到期, 截至时间 "+dateTimeFormatter.format(param.getDate()));
+                userEvent.setDate(param.getDate().toLocalDate());
+                userEventService.save(userEvent);
+            }else{
+                UpdateWrapper<UmUserEvent> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("user_id",param.getUserId())
+                             .eq("task_id",param.getId())
+                             .set("content","任务 ["+task.getDescription()+"] 即将到期, 截至时间 "+dateTimeFormatter.format(param.getDate()))
+                             .set("date",param.getDate().toLocalDate());
+                userEventService.update(updateWrapper);
+            }
+        }else{
+            QueryWrapper<UmUserEvent> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id",param.getUserId())
+                    .eq("task_id",param.getId());
+            userEventService.remove(queryWrapper);
+        }
+
         UpdateWrapper<TmTask> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id",date.getId()).set("due_date",date.getDate());
+        updateWrapper.eq("id",param.getId()).set("due_date",param.getDate());
         boolean isUpdate = taskService.update(updateWrapper);
         if(isUpdate){
             return Result.success("success");
@@ -294,12 +340,6 @@ public class TaskController {
        return Result.failed();
     }
 
-    @PostMapping("/delete_file")
-    public Result<String> deleteFile(@RequestParam(value = "fileId") Long id){
-
-        return Result.failed();
-    }
-
     @PostMapping("/add_log")
     public Result<TmTaskLog> addLog(@RequestBody TmTaskLog taskLog){
         taskLog.setCreateDate(LocalDateTime.now());
@@ -337,13 +377,21 @@ public class TaskController {
                     break;
                 }
                 case 4:{
-                    logListItem.setContent(logParam.getName()+" 将任务开始时间更改为 "+logParam.getObject());
+                    if(logParam.getObject()!=null){
+                        logListItem.setContent(logParam.getName()+" 将任务开始时间更改为 "+logParam.getObject());
+                    }else{
+                        logListItem.setContent(logParam.getName()+" 取消了任务开始时间");
+                    }
                     logListItem.setCreateDate(logParam.getCreateDate());
                     list.add(logListItem);
                     break;
                 }
                 case 5:{
-                    logListItem.setContent(logParam.getName()+" 将任务结束时间更改为 "+logParam.getObject());
+                    if(logParam.getObject()!=null){
+                        logListItem.setContent(logParam.getName()+" 将任务结束时间更改为 "+logParam.getObject());
+                    }else{
+                        logListItem.setContent(logParam.getName()+" 取消了任务结束时间");
+                    }
                     logListItem.setCreateDate(logParam.getCreateDate());
                     list.add(logListItem);
                     break;
@@ -373,9 +421,33 @@ public class TaskController {
                     list.add(logListItem);
                     break;
                 }
+                case 10:{
+                    logListItem.setContent(logParam.getName()+" 将类型修改为 "+logParam.getObject());
+                    logListItem.setCreateDate(logParam.getCreateDate());
+                    list.add(logListItem);
+                    break;
+                }
             }
         }
         return Result.success(list);
+    }
+
+    @GetMapping("/delete_task")
+    public Result<String> deleteTask(@RequestParam(value = "taskId") Long taskId){
+        boolean isDelete = taskService.removeById(taskId);
+        if(isDelete){
+            return Result.success("success");
+        }
+        return Result.failed();
+    }
+
+    @GetMapping("/board_rename")
+    public Result<String> boardRename(@RequestParam(value = "boardId") String boardId,
+                                      @RequestParam(value = "boardName") String boardName){
+        UpdateWrapper<TmBoard> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",boardId).set("name",boardName);
+        boardService.update(updateWrapper);
+        return Result.success("success");
     }
 }
 

@@ -24,18 +24,20 @@ public interface PmProjectUserMapper extends BaseMapper<PmProjectUser> {
             "FROM pm_project_user, um_user " +
             "WHERE pm_project_user.user_id = um_user.id " +
             "AND pm_project_user.project_id = #{projectId}")
-    List<MemberParam> getMemberListByProjectId(Long projectId);
+    List<MemberParam> getMemberListByProjectId(String projectId);
 
     @Select("SELECT project_id as id, name, create_date, picture, description, create_user_id, status " +
             "FROM pm_project_user, pm_project " +
             "WHERE pm_project_user.project_id = pm_project.id " +
             "AND pm_project_user.user_id = #{userId}")
-    List<PmProject> getProjectsByUserId(Long userId);
+    List<PmProject> getProjectsByUserId(String userId);
 
+    //这里要用${}
+    @Select("SELECT user_id as id, username, icon, nick_name " +
+            "FROM pm_project_user, um_user " +
+            "WHERE pm_project_user.user_id = um_user.id " +
+            "AND nick_name like '%${keyword}%' " +
+            "AND pm_project_user.project_id = #{projectId}")
+    List<MemberParam> searchMember(String keyword, String projectId);
 
-    @Select("SELECT name " +
-            "FROM um_user_role, um_role " +
-            "WHERE um_user_role.role_id = um_role.id " +
-            "AND um_user_role.user_id = #{userId}")
-    List<String> getPermissionByUserId(Long userId);
 }

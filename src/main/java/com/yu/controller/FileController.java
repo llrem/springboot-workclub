@@ -40,6 +40,13 @@ public class FileController {
         return Result.success("success");
     }
 
+    @GetMapping("/delete_folder")
+    public Result<String> deleteFolder(@RequestParam(value = "path") String path) {
+        String objectName = "workclub/file/project/" + path;
+        ossService.deleteFolder(objectName);
+        return Result.success("success");
+    }
+
     @GetMapping("/delete_file")
     public Result<String> deleteFile(@RequestParam(value = "path") String path) {
         String objectName = "workclub/file/project/" + path;
