@@ -3,15 +3,17 @@ package com.yu.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
+import com.yu.dto.InvitationParam;
 import com.yu.dto.MemberParam;
-import com.yu.entity.PmProject;
-import com.yu.entity.PmProjectUser;
-import com.yu.entity.TmTask;
+import com.yu.entity.*;
 import com.yu.service.PmProjectService;
 import com.yu.service.PmProjectUserService;
+import com.yu.service.PmUserInviteService;
+import com.yu.service.UmUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,10 +34,14 @@ public class ProjectController {
     PmProjectService projectService;
     @Autowired
     PmProjectUserService projectUserService;
+    @Autowired
+    PmUserInviteService userInviteService;
+    @Autowired
+    UmUserService userService;
 
     @GetMapping("/get_projects")
-    public Result<List<PmProject>> getProjects(@RequestParam(value = "id") String UserId){
-        List<PmProject> projectList = projectUserService.getProjectsByUserId(UserId);
+    public Result<List<PmProject>> getProjects(@RequestParam(value = "id") String userId){
+        List<PmProject> projectList = projectUserService.getProjectsByUserId(userId);
         return Result.success(projectList);
     }
 
@@ -147,6 +153,44 @@ public class ProjectController {
             return Result.success("加入成功");
         }
         return Result.success("你已经加入了该项目");
+    }
+
+    @GetMapping("/get_invitations")
+    public Result<List<InvitationParam>> getInvitations(@RequestParam(value = "userId") String userId){
+        QueryWrapper<PmUserInvite> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",userId).eq("status",1);
+        List<PmUserInvite> list = userInviteService.list(queryWrapper);
+        List<InvitationParam> list1 = new ArrayList<>();
+        for(PmUserInvite userInvite : list){
+            InvitationParam param = new InvitationParam();
+            param.setId(userInvite.getId());
+            PmProject project = projectService.getById(userInvite.getProjectId());
+            UmUser inviter = userService.getById(userInvite.getInviterId());
+            param.setContent(inviter.getNickName()+"邀请您加入项目【"+project.getName()+"】");
+            list1.add(param);
+        }
+        return Result.success(list1);
+    }
+
+    @GetMapping("/agree_invite")
+    public Result<String> agreeInvite(@RequestParam(value = "id") String id){
+        PmUserInvite userInvite = userInviteService.getById(id);
+        UpdateWrapper<PmUserInvite> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id).set("status",2);
+        userInviteService.update(updateWrapper);
+        PmProjectUser projectUser = new PmProjectUser();
+        projectUser.setUserId(userInvite.getUserId());
+        projectUser.setProjectId(userInvite.getProjectId());
+        projectUserService.save(projectUser);
+        return Result.success("success");
+    }
+
+    @GetMapping("/refuse_invite")
+    public Result<String> refuseInvite(@RequestParam(value = "id") String id){
+        UpdateWrapper<PmUserInvite> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id).set("status",2);
+        userInviteService.update(updateWrapper);
+        return Result.success("success");
     }
 }
 

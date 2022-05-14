@@ -19,5 +19,5 @@ import java.util.List;
 public interface TmTaskFollowerService extends IService<TmTaskFollower> {
     List<MemberParam> getFollowersByTaskId(String taskId);
 
-    List<TmTask> getTaskByUserId(String userId);
+    List<TmTask> getTasks(String userId,String projectId);
 }

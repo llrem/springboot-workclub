@@ -6,6 +6,8 @@ import com.yu.dto.CardDataParam;
 import com.yu.dto.PieDataParam;
 import com.yu.entity.PmProjectBoard;
 import com.yu.service.PmProjectBoardService;
+import com.yu.service.PmProjectService;
+import com.yu.service.PmProjectUserService;
 import com.yu.service.TmBoardTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,13 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("task/statistic")
+@RequestMapping("/project/statistic")
 public class statisticController {
 
     @Autowired
     PmProjectBoardService projectBoardService;
     @Autowired
     TmBoardTaskService boardTaskService;
+    @Autowired
+    PmProjectUserService projectUserService;
+    @Autowired
+    PmProjectService projectService;
 
     @GetMapping("/get_pie_data")
     public Result<List<PieDataParam>> getPieData(@RequestParam(value = "projectId") String projectId){
@@ -105,6 +111,30 @@ public class statisticController {
         list.addAll(typeList);
         list.addAll(statusList);
         list.addAll(priorityList);
+        return Result.success(list);
+    }
+
+    @GetMapping("/get_projects_data")
+    public Result<List<PieDataParam>> getProjectsData(@RequestParam(value = "userId") String userId){
+        List<PieDataParam> list = projectService.getProjectsData(userId);
+        for(PieDataParam param : list){
+            if(param.getName().equals("1")){
+                param.setName("进行中项目");
+            }else{
+                param.setName("已归档项目");
+            }
+        }
+        return Result.success(list);
+    }
+
+    @GetMapping("/get_tasks_data")
+    public Result<List<String>> getTasksData(@RequestParam(value = "userId") String userId){
+        List<String> list = new ArrayList<>();
+        List<String> list1 = projectService.getStatusData(userId);
+        List<String> list2 = projectService.getPriorityData(userId);
+        list2.remove(0);
+        list.addAll(list1);
+        list.addAll(list2);
         return Result.success(list);
     }
 }

@@ -18,7 +18,7 @@ import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
 @RestController
-@RequestMapping("task/file")
+@RequestMapping("/project/file")
 public class FileController {
     @Autowired
     OssService ossService;

@@ -6,9 +6,11 @@ import com.yu.common.api.Result;
 import com.yu.dto.MemberParam;
 import com.yu.dto.PermissionParam;
 import com.yu.entity.PmProjectUser;
+import com.yu.entity.PmUserInvite;
 import com.yu.entity.UmUser;
 import com.yu.entity.UmUserRole;
 import com.yu.service.PmProjectUserService;
+import com.yu.service.PmUserInviteService;
 import com.yu.service.UmUserRoleService;
 import com.yu.service.UmUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("task/member")
+@RequestMapping("/project/member")
 public class PermissionController {
     @Autowired
     PmProjectUserService projectUserService;
@@ -26,6 +28,8 @@ public class PermissionController {
     UmUserRoleService userRoleService;
     @Autowired
     UmUserService userService;
+    @Autowired
+    PmUserInviteService userInviteService;
 
     @GetMapping("/get_members")
     public Result<List<PermissionParam>> getMembers(@RequestParam(value = "projectId") String projectId){
@@ -107,8 +111,9 @@ public class PermissionController {
     }
 
     @PostMapping("/invite_user")
-    public Result<String> inviteUser(@RequestBody PmProjectUser projectUser){
-        projectUserService.save(projectUser);
+    public Result<String> inviteUser(@RequestBody PmUserInvite userInvite){
+        userInvite.setStatus(1);
+        userInviteService.save(userInvite);
         return Result.success("success");
     }
 }

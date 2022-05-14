@@ -28,4 +28,6 @@ public class TaskInfoParam {
     private List<MemberParam> followers;
 
     private Integer status;
+
+    private List<TaskParam> headTaskList;
 }

@@ -24,16 +24,10 @@ import java.util.List;
  * @since 2022-03-11
  */
 @RestController
-@RequestMapping("task/board")
+@RequestMapping("/task")
 public class TaskController {
     @Autowired
     TmTaskService taskService;
-    @Autowired
-    TmBoardService boardService;
-    @Autowired
-    PmProjectBoardService projectBoardService;
-    @Autowired
-    TmBoardTaskService boardTaskService;
     @Autowired
     TmTagService tagService;
     @Autowired
@@ -48,82 +42,20 @@ public class TaskController {
     TmTaskLogService taskLogService;
     @Autowired
     UmUserEventService userEventService;
-
-    @PostMapping("/add_task")
-    public Result<TmTask> addTask(@RequestBody AddTaskParam taskParam){
-        TmTask task = new TmTask();
-        task.setDescription(taskParam.getDescription());
-        task.setStartDate(LocalDateTime.now());
-        task.setType(1);
-        task.setPriority(1);
-        task.setStatus(1);
-        boolean isSave = taskService.save(task);
-
-        TmBoardTask boardTask = new TmBoardTask();
-        boardTask.setBoardId(taskParam.getBoardId());
-        boardTask.setTaskId(task.getId());
-        boolean isSave2 = boardTaskService.save(boardTask);
-        if (isSave && isSave2){
-            return Result.success(task);
-        }
-        return Result.failed();
-    }
-
-    @GetMapping("/get_tasks")
-    public Result<List<TmTask>> getTasks(@RequestParam("boardId") String id,
-                                         @RequestParam("keyword") String keyword){
-        List<TmTask> list = taskService.getTasksByBoardId(id,keyword);
-        return Result.success(list);
-    }
-
-    @PostMapping("/add_board")
-    public Result<TmBoard> addList(@RequestBody AddListParam listParam){
-        TmBoard board = new TmBoard();
-        board.setName(listParam.getName());
-        boolean isSave = boardService.save(board);
-        if (isSave){
-            PmProjectBoard projectBoard = new PmProjectBoard();
-            projectBoard.setBoardId(board.getId());
-            projectBoard.setProjectId(listParam.getProjectId());
-            boolean isSave2 = projectBoardService.save(projectBoard);
-            if(isSave2){
-                return Result.success(board);
-            }
-        }
-        return Result.failed();
-    }
-
-    @GetMapping("/get_boards")
-    public Result<List<TmBoard>> getBoards(@RequestParam(value = "projectId") String projectId){
-        List<TmBoard> list = projectBoardService.getBoardsByProjectId(projectId);
-        return Result.success(list);
-    }
-
-    @GetMapping("/delete_board")
-    public Result<String> deleteBoard(@RequestParam(value = "id") String boardId){
-        QueryWrapper<PmProjectBoard> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("board_id",boardId);
-        boolean isMove = projectBoardService.remove(queryWrapper);
-        boolean isMove2 = boardService.removeById(boardId);
-
-        if (isMove && isMove2) {
-            return Result.success("success");
-        }
-        return Result.failed();
-    }
-
+    @Autowired
+    TmTaskSubService subTaskService;
+    @Autowired
+    TmTaskDependenceService taskDependenceService;
 
     @GetMapping("/get_task_info")
     public Result<TaskInfoParam> getTaskInfo(@RequestParam(value = "taskId") String taskId){
         TmTask task = taskService.getById(taskId);
-
         QueryWrapper<TmTag> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("task_id",taskId);
         List<TmTag> list = tagService.list(queryWrapper);
-
         List<MemberParam> followers = taskFollowerService.getFollowersByTaskId(taskId);
-
         UmUser user = userService.getById(task.getExecutor());
+        List<TaskParam> taskList = taskDependenceService.getHeadTaskList(taskId);
 
         TaskInfoParam taskInfo = new TaskInfoParam(
                 task.getDescription(),
@@ -134,7 +66,8 @@ public class TaskController {
                 task.getType(),
                 list,
                 followers,
-                task.getStatus()
+                task.getStatus(),
+                taskList
         );
 
         return Result.success(taskInfo);
@@ -441,12 +374,46 @@ public class TaskController {
         return Result.failed();
     }
 
-    @GetMapping("/board_rename")
-    public Result<String> boardRename(@RequestParam(value = "boardId") String boardId,
-                                      @RequestParam(value = "boardName") String boardName){
-        UpdateWrapper<TmBoard> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id",boardId).set("name",boardName);
-        boardService.update(updateWrapper);
+    @PostMapping("/publish_sub_task")
+    public Result<TmTaskSub> subTask(@RequestBody TmTaskSub subTask){
+        subTask.setCreateDate(LocalDateTime.now());
+        subTaskService.save(subTask);
+        return Result.success(subTask);
+    }
+
+    @GetMapping("/get_sub_tasks")
+    public Result<List<SubTaskParam>> getSubTasks(@RequestParam(value = "taskId") String taskId){
+        List<SubTaskParam> list = subTaskService.getSubTasks(taskId);
+        return Result.success(list);
+    }
+
+    @GetMapping("/delete_sub_task")
+    public Result<String> deleteSubTask(@RequestParam(value = "id") String id){
+       subTaskService.removeById(id);
+        return Result.success("success");
+    }
+
+    @GetMapping("/get_head_tasks")
+    public Result<List<TaskParam>> getHeadTasks(@RequestParam(value = "taskId") String taskId){
+        List<TaskParam> taskList = taskDependenceService.getHeadTaskList(taskId);
+        return Result.success(taskList);
+    }
+
+    @PostMapping("/add_head_task")
+    public Result<String> addHeadTask(@RequestBody TmTaskDependence taskDependence){
+        if(taskDependence.getHeadTask().equals(taskDependence.getRearTask())){
+            return Result.failed("不可添加自己");
+        }
+        taskDependenceService.save(taskDependence);
+        return Result.success("success");
+    }
+
+    @PostMapping("/remove_head_task")
+    public Result<String> removeHeadTask(@RequestBody TmTaskDependence taskDependence){
+        QueryWrapper<TmTaskDependence> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("head_task",taskDependence.getHeadTask())
+                .eq("rear_task",taskDependence.getRearTask());
+        taskDependenceService.remove(queryWrapper);
         return Result.success("success");
     }
 }

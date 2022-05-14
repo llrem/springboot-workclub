@@ -22,5 +22,5 @@ public interface TmBoardTaskService extends IService<TmBoardTask> {
 
     List<CardDataParam> numberOfStatus(String projectId);
 
-    List<CardDataParam> numberOfPriority(String boardId);
+    List<CardDataParam> numberOfPriority(String projectId);
 }

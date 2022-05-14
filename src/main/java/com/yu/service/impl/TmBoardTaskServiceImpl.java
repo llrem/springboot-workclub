@@ -40,8 +40,8 @@ public class TmBoardTaskServiceImpl extends ServiceImpl<TmBoardTaskMapper, TmBoa
     }
 
     @Override
-    public List<CardDataParam> numberOfPriority(String boardId) {
-        return boardTaskMapper.numberOfPriority(boardId);
+    public List<CardDataParam> numberOfPriority(String projectId) {
+        return boardTaskMapper.numberOfPriority(projectId);
     }
 
 }

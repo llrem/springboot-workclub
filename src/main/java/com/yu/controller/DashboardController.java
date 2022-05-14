@@ -31,8 +31,9 @@ public class DashboardController {
     UmUserEventService userEventService;
 
     @GetMapping("/get_tasks")
-    public Result<TaskClassifyByStatusParam> getCategoricalTasks(@RequestParam(value = "userId") String userId){
-        List<TmTask> list = taskFollowerService.getTaskByUserId(userId);
+    public Result<TaskClassifyByStatusParam> getCategoricalTasks(@RequestParam(value = "userId") String userId,
+                                                                 @RequestParam(value = "projectId") String projectId){
+        List<TmTask> list = taskFollowerService.getTasks(userId,projectId);
         TaskClassifyByStatusParam param = new TaskClassifyByStatusParam();
         for(TmTask task : list){
             switch (task.getStatus()){

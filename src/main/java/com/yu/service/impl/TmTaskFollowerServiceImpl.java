@@ -32,7 +32,7 @@ public class TmTaskFollowerServiceImpl extends ServiceImpl<TmTaskFollowerMapper,
     }
 
     @Override
-    public List<TmTask> getTaskByUserId(String userId) {
-        return taskFollowerMapper.getTaskByUserId(userId);
+    public List<TmTask> getTasks(String userId,String projectId) {
+        return taskFollowerMapper.getTasks(userId,projectId);
     }
 }

@@ -38,7 +38,7 @@ public interface TmBoardTaskMapper extends BaseMapper<TmBoardTask> {
             "AND board_id IN (SELECT board_id FROM pm_project_board WHERE project_id = #{projectId})" +
             "GROUP BY status "+
             "ORDER BY status")
-    List<CardDataParam> numberOfStatus(String boardId);
+    List<CardDataParam> numberOfStatus(String projectId);
 
     @Select("SELECT priority as name, COUNT(priority) as value " +
             "FROM tm_board_task, tm_task " +
@@ -46,6 +46,6 @@ public interface TmBoardTaskMapper extends BaseMapper<TmBoardTask> {
             "AND board_id IN (SELECT board_id FROM pm_project_board WHERE project_id = #{projectId})" +
             "GROUP BY priority " +
             "ORDER BY priority")
-    List<CardDataParam> numberOfPriority(String boardId);
+    List<CardDataParam> numberOfPriority(String projectId);
 
 }
