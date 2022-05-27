@@ -35,4 +35,10 @@ public interface TmTaskFollowerMapper extends BaseMapper<TmTaskFollower> {
             "WHERE board_id in (SELECT board_id FROM pm_project_board " +
             "WHERE project_id = #{projectId}))")
     List<TmTask> getTasks(@Param("userId") String userId,@Param("projectId") String projectId);
+
+    @Select("SELECT task_id as id, description,start_date,due_date,priority,type,status " +
+            "FROM tm_task_follower, tm_task " +
+            "WHERE tm_task_follower.task_id = tm_task.id " +
+            "AND tm_task_follower.user_id = #{userId} ")
+    List<TmTask> getAllTasks(String userId);
 }

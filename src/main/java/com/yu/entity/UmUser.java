@@ -47,6 +47,4 @@ public class UmUser implements Serializable {
     private String personalizedSignature;
 
     private Integer status;
-
-
 }

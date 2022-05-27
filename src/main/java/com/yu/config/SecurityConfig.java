@@ -32,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeHttpRequests()
                 .antMatchers("/user/register","/user/login","/user/logout",
-                        "/aliyun/oss/download","/task/file/download_file").permitAll()
+                        "/aliyun/oss/download","/project/file/download_file").permitAll()
                 .anyRequest().authenticated();
 
         // 添加JWT filter

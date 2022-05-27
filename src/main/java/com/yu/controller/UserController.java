@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.yu.common.api.Result;
 import com.yu.dto.LoginParam;
 import com.yu.entity.UmUser;
+import com.yu.service.UmUserRoleService;
 import com.yu.service.UmUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     UmUserService userService;
+    @Autowired
+    UmUserRoleService userRoleService;
 
     @PostMapping("/register")
     public Result<UmUser> register(@RequestBody LoginParam loginParam){
@@ -36,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result login(@RequestBody LoginParam loginParam){
+    public Result<Map<String, String>> login(@RequestBody LoginParam loginParam){
         String token = userService.login(loginParam.getUsername(), loginParam.getPassword());
         if (token == null) {
             return Result.validateFailed("用户名或密码错误！");
@@ -63,7 +66,7 @@ public class UserController {
     }
 
     @PostMapping("/saveInfo")
-    public Result saveInfo(@RequestBody UmUser user){
+    public Result<UmUser> saveInfo(@RequestBody UmUser user){
         UpdateWrapper<UmUser> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",user.getId())
                 .set("nick_name",user.getNickName())
@@ -82,7 +85,7 @@ public class UserController {
     }
 
     @PostMapping("/save_avatar")
-    public Result saveAvatar(@RequestBody UmUser user){
+    public Result<UmUser> saveAvatar(@RequestBody UmUser user){
         UpdateWrapper<UmUser> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",user.getId())
                 .set("icon",user.getIcon());

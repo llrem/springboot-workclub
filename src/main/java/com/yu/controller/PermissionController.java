@@ -43,7 +43,8 @@ public class PermissionController {
             permissionParam.setIcon(memberParam.getIcon());
 
             QueryWrapper<UmUserRole> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id",memberParam.getId());
+            queryWrapper.eq("user_id",memberParam.getId())
+                    .eq("project_id",projectId);
             UmUserRole userRole = userRoleService.getOne(queryWrapper);
             permissionParam.setRole(userRole.getRole());
 
@@ -55,9 +56,13 @@ public class PermissionController {
 
     @GetMapping("/set_permission")
     public Result<String> setPermission(@RequestParam(value = "userId") String userId,
+                                @RequestParam(value = "projectId") String projectId,
                                 @RequestParam(value = "role") String role){
         UpdateWrapper<UmUserRole> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("user_id",userId).set("role",role);
+        updateWrapper
+                .eq("user_id",userId)
+                .eq("project_id",projectId)
+                .set("role",role);
         userRoleService.update(updateWrapper);
         return Result.success("success");
     }
@@ -68,6 +73,10 @@ public class PermissionController {
         QueryWrapper<PmProjectUser> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("project_id",projectId).eq("user_id",userId);
         projectUserService.remove(queryWrapper);
+
+        QueryWrapper<UmUserRole> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("project_id",projectId).eq("user_id",userId);
+        userRoleService.remove(queryWrapper1);
         return Result.success("success");
     }
 
@@ -84,7 +93,8 @@ public class PermissionController {
             permissionParam.setIcon(memberParam.getIcon());
 
             QueryWrapper<UmUserRole> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id",memberParam.getId());
+            queryWrapper.eq("user_id",memberParam.getId())
+                    .eq("project_id",projectId);
             UmUserRole userRole = userRoleService.getOne(queryWrapper);
             permissionParam.setRole(userRole.getRole());
 

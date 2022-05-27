@@ -20,4 +20,6 @@ public interface TmTaskFollowerService extends IService<TmTaskFollower> {
     List<MemberParam> getFollowersByTaskId(String taskId);
 
     List<TmTask> getTasks(String userId,String projectId);
+
+    List<TmTask> getAllTasks(String userId);
 }

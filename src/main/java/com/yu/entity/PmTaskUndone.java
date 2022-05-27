@@ -1,9 +1,10 @@
 package com.yu.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.time.LocalDate;
+import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,23 +15,25 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author llrem
- * @since 2022-05-03
+ * @since 2022-05-27
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class TmTaskDependence implements Serializable {
+public class PmTaskUndone implements Serializable {
 
     private static final long serialVersionUID=1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    private Long headTask;
+    private Long projectId;
 
-    private Long rearTask;
+    private LocalDate date;
 
-    public TmTaskDependence(Long headTask,Long rearTask){
-        this.headTask = headTask;
-        this.rearTask = rearTask;
-    }
+    /**
+     * 项目中进行中和未完成任务的数量
+     */
+    private Integer number;
+
+
 }

@@ -3,6 +3,8 @@ package com.yu.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yu.dto.PieDataParam;
 import com.yu.entity.PmProject;
+import com.yu.entity.TmTask;
+import com.yu.entity.TmTaskDependence;
 import com.yu.entity.UmUser;
 import com.yu.mapper.PmProjectMapper;
 import com.yu.service.PmProjectService;
@@ -34,10 +36,8 @@ public class PmProjectServiceImpl extends ServiceImpl<PmProjectMapper, PmProject
     }
 
     @Override
-    public List<PmProject> searchProjects(String key) {
-        QueryWrapper<PmProject> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("name",key);
-        return projectMapper.selectList(queryWrapper);
+    public List<PmProject> searchProjects(String userId, String key) {
+        return projectMapper.searchProjects(userId,key);
     }
 
     @Override
@@ -53,5 +53,15 @@ public class PmProjectServiceImpl extends ServiceImpl<PmProjectMapper, PmProject
     @Override
     public List<String> getPriorityData(String userId) {
         return projectMapper.getPriorityData(userId);
+    }
+
+    @Override
+    public List<TmTaskDependence> getAssociatedTasks(String projectId) {
+        return projectMapper.getAssociatedTasks(projectId);
+    }
+
+    @Override
+    public List<TmTask> getTasksByProjectId(Long project) {
+        return projectMapper.getTasksByProjectId(project);
     }
 }

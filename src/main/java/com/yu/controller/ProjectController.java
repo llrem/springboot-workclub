@@ -6,12 +6,13 @@ import com.yu.common.api.Result;
 import com.yu.dto.InvitationParam;
 import com.yu.dto.MemberParam;
 import com.yu.entity.*;
-import com.yu.service.PmProjectService;
-import com.yu.service.PmProjectUserService;
-import com.yu.service.PmUserInviteService;
-import com.yu.service.UmUserService;
+import com.yu.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
  * @since 2022-02-20
  */
 @RestController
+@EnableScheduling
 @RequestMapping("/project")
 public class ProjectController {
 
@@ -38,6 +40,10 @@ public class ProjectController {
     PmUserInviteService userInviteService;
     @Autowired
     UmUserService userService;
+    @Autowired
+    UmUserRoleService userRoleService;
+    @Autowired
+    PmTaskUndoneService taskUndoneService;
 
     @GetMapping("/get_projects")
     public Result<List<PmProject>> getProjects(@RequestParam(value = "id") String userId){
@@ -52,8 +58,9 @@ public class ProjectController {
     }
 
     @GetMapping("/search_project")
-    public Result<List<PmProject>> searchProjects(@RequestParam(value = "key")String key){
-        List<PmProject> projectList = projectService.searchProjects(key);
+    public Result<List<PmProject>> searchProjects(@RequestParam(value = "userId") String userId,
+                                                  @RequestParam(value = "key") String key){
+        List<PmProject> projectList = projectService.searchProjects(userId,key);
         return Result.success(projectList);
     }
 
@@ -71,7 +78,13 @@ public class ProjectController {
         projectUser.setProjectId(project.getId());
         boolean isSave2 = projectUserService.save(projectUser);
 
-        if (isSave && isSave2){
+        UmUserRole userRole = new UmUserRole();
+        userRole.setUserId(project.getCreateUserId());
+        userRole.setProjectId(project.getId());
+        userRole.setRole(1);
+        boolean isSave3 = userRoleService.save(userRole);
+
+        if (isSave && isSave2 && isSave3){
             return Result.success(project);
         }
         return Result.failed();
@@ -148,6 +161,13 @@ public class ProjectController {
         queryWrapper.eq("project_id",projectUser.getProjectId())
                 .eq("user_id",projectUser.getUserId());
         PmProjectUser pu = projectUserService.getOne(queryWrapper);
+
+        UmUserRole userRole = new UmUserRole();
+        userRole.setProjectId(projectUser.getProjectId());
+        userRole.setUserId(projectUser.getUserId());
+        userRole.setRole(3);
+        userRoleService.save(userRole);
+
         if(pu==null){
             projectUserService.save(projectUser);
             return Result.success("加入成功");
@@ -175,13 +195,22 @@ public class ProjectController {
     @GetMapping("/agree_invite")
     public Result<String> agreeInvite(@RequestParam(value = "id") String id){
         PmUserInvite userInvite = userInviteService.getById(id);
+
         UpdateWrapper<PmUserInvite> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",id).set("status",2);
         userInviteService.update(updateWrapper);
+
         PmProjectUser projectUser = new PmProjectUser();
         projectUser.setUserId(userInvite.getUserId());
         projectUser.setProjectId(userInvite.getProjectId());
         projectUserService.save(projectUser);
+
+        UmUserRole userRole = new UmUserRole();
+        userRole.setProjectId(userInvite.getProjectId());
+        userRole.setUserId(userInvite.getUserId());
+        userRole.setRole(3);
+        userRoleService.save(userRole);
+
         return Result.success("success");
     }
 
@@ -191,6 +220,34 @@ public class ProjectController {
         updateWrapper.eq("id",id).set("status",2);
         userInviteService.update(updateWrapper);
         return Result.success("success");
+    }
+
+    @GetMapping("/get_user_role")
+    public Result<Integer> getUserRole(@RequestParam(value = "projectId") String projectId,
+                                      @RequestParam(value = "userId") String userId){
+        QueryWrapper<UmUserRole> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("project_id",projectId).eq("user_id",userId);
+        UmUserRole userRole = userRoleService.getOne(queryWrapper);
+        return Result.success(userRole.getRole());
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void getNumberOfUndoneTasks(){
+        List<PmProject> projects = projectService.list();
+        for(PmProject project : projects){
+            int number = 0;
+            List<TmTask> tasks = projectService.getTasksByProjectId(project.getId());
+            for(TmTask task : tasks){
+                if(task.getStatus()!=3){
+                    number++;
+                }
+            }
+            PmTaskUndone taskUndone = new PmTaskUndone();
+            taskUndone.setNumber(number);
+            taskUndone.setProjectId(project.getId());
+            taskUndone.setDate(LocalDate.now());
+            taskUndoneService.save(taskUndone);
+        }
     }
 }
 
